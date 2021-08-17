@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+ AWS_ACCESS_KEY_ID=${1}
+ AWS_SECRET_ACCESS_KEY=${2}
+ AWS_REGION=${3}
+
+ export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}"
+ export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}"
+ export AWS_REGION="${AWS_REGION}"
+
+ echo "All set."
+ 
