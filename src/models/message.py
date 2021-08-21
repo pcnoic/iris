@@ -7,4 +7,4 @@ class Message(BaseModel):
     message: str
     protocol: str # Usually: sms
     topic: str # (could be used for groupping notifications)
-    provider: str # Supported providers: aws
+    provider: str # Supported providers: aws, classic
