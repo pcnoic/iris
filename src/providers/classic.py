@@ -12,9 +12,8 @@ class SMTPMail:
         SMTP_HOST = os.environ['SMTP_HOST']
         SMTP_PORT = os.environ['SMTP_PORT']
         SMTP_PWD = os.environ['SMTP_PASSWORD']
-    except Exception, e:
-        print ('Classic credentials are not set as environment variables.'
-               , e)
+    except Exception as e:
+        print ('Classic credentials are not set as environment variables.', e)
 
     def send(self, message):
 
