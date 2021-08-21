@@ -12,12 +12,11 @@ class AWS_SMS:
                               ],
                               aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'
                               ], region_name=os.environ['AWS_REGION'])
-    except Exception, e:
+    except Exception as e:
         print ('AWS credentials are not set as environment variables: '
                , e)
 
     def send(self, message):
-        print message
 
         # Topic if it doesn't exist yet
 
@@ -36,7 +35,7 @@ class AWS_SMS:
         try:
             self.client.publish(Message=message.message,
                                 TopicArn=topic_arn)
-        except Exception, e:
+        except Exception as e:
             print ('Failed to publish message as SMS: ', e)
             return 1
 
@@ -48,7 +47,7 @@ class AWS_SES:
     # TODO: implement methods
 
     def hello():
-        print 'hello'
+        print ("hello")
 
 
 def push(message):
