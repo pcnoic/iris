@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import smtplib
 import os
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 class SMTPMail:
@@ -20,20 +22,20 @@ class SMTPMail:
         subject = message.topic
         body = message.message
 
-        email_text="""\
-            From: %s
-            To: %s
-            Subject: %s
+        #Setup the MIME
+        msg = MIMEMultipart()
+        msg['From'] = sent_from
+        msg['To'] = to[0]
+        msg['Subject'] = subject  #The subject line
+        #The body and the attachments for the mail
+        msg.attach(MIMEText(body, 'plain'))
 
-
-            %s
-        """%(sent_from,",".join(to),subject, body)
 
         try:
             smtp_server = smtplib.SMTP_SSL(self.SMTP_HOST, self.SMTP_PORT)
             smtp_server.ehlo()
             smtp_server.login(self.SMTP_USER, self.SMTP_PWD)
-            smtp_server.sendmail(sent_from, to[0], email_text)
+            smtp_server.sendmail(sent_from, to[0], msg.as_string())
             smtp_server.close()
             print("Mail was sent successfully.")
             return 0
