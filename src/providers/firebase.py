@@ -1,22 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
-import logging
 import os
 import requests
-import http.client as http_client
 
-logger = logging.getLogger(__name__)
 
-# Debugging requests
-http_client.HTTPConnection.debuglevel = 1
-
-# You must initialize logging, otherwise you'll not see debug output.
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
-requests_log = logging.getLogger("requests.packages.urllib3")
-requests_log.setLevel(logging.DEBUG)
-requests_log.propagate = True
 
 class FIREBASE_PUSH:
     try:
@@ -60,7 +47,10 @@ class FIREBASE_PUSH:
 
 
 
+
         for target in message.targets:
+
+            payload = {}
 
             payload = {
                 "notification": notification,
@@ -70,8 +60,8 @@ class FIREBASE_PUSH:
             try:
                 print(payload)
                 print(headers)
-                req = requests.post(self.notification_api, data=payload, headers=headers)
-                print(req.status_code, req.reason)
+                req = requests.post(self.notification_api, json=payload, headers=headers)
+                print(req.status_code, req.reason, req.json())
             except Exception as e:
                 print("Something went wrong when sending a request to Firebase Push API")
                 return 1
