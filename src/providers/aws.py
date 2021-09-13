@@ -26,7 +26,7 @@ class AWS_SMS:
                              in E.164 format. For example, a United States phone
                              number might be +12065550101.
         :param message: The message to send.
-        :return: The ID of the message.
+        :return The ID of the message.
         """
 
         for target in message.targets:

@@ -7,7 +7,7 @@ from fastapi import FastAPI
 import json
 
 from models.message import Message
-from providers import aws, classic
+from providers import aws, classic, firebase
 
 # Application controllers
 app = FastAPI()
@@ -19,6 +19,9 @@ def aws_provider():
 def classic_provider():
     return classic
 
+def firebase_provider():
+    return firebase
+
 # Endpoints
 @app.post("/api/v1/message/push")
 def push_message(message: Message):
@@ -26,7 +29,8 @@ def push_message(message: Message):
     # Extend the switcher when adding providers
     switcher = {
         "aws": aws_provider(),
-        "classic": classic_provider()
+        "classic": classic_provider(),
+        "firebase": firebase_provider(),
     }
 
     provider = switcher.get(message.provider, lambda: "Not supported provider")
