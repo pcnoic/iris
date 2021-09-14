@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 import os
 import requests
+import sys 
+
+
 
 
 
@@ -62,6 +65,7 @@ class FIREBASE_PUSH:
                 print(headers)
                 req = requests.post(self.notification_api, json=payload, headers=headers)
                 print(req.status_code, req.reason, req.json())
+                sys.stdout.flush() # for debugging
             except Exception as e:
                 print("Something went wrong when sending a request to Firebase Push API")
                 return 1
