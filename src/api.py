@@ -7,6 +7,7 @@ from fastapi import FastAPI
 import json
 
 from models.message import Message
+from models.device import Device
 from providers import aws, classic, firebase
 
 # Application controllers
@@ -38,9 +39,31 @@ def push_message(message: Message):
     
     result = provider.push(message)
     if result == 0:
-        response = json.dumps({"status":"success"})
+        response = {"status":"success"}
     else:
-        response = json.dumps({"status":"failed"})
+        response = {"status":"fail"}
 
     return response
 
+@app.post("/api/v1/push/device/register")
+def device_register(device: Device):
+    registrar = firebase.FIREBASE_REGISTER()
+    result = registrar.register_device(device.registration_tokens, device.topic)
+    if result != 0:
+        response = {"status":"fail"}
+    else:
+        response = {"status":"success"}
+    
+    return response
+
+
+@app.post("/api/v1/push/device/unregister")
+def device_unregister(device: Device):
+    registrar = firebase.FIREBASE_REGISTER()
+    result = registrar.unregister_device(device.registration_tokens, device.topic)
+    if result != 0:
+        response = {"status":"fail"}
+    else: 
+        response = {"status":"success"}
+    
+    return response

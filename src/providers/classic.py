@@ -19,7 +19,7 @@ class SMTPMail:
     def send(self, message):
         sent_from = self.SMTP_USER
         to = message.targets
-        subject = message.topic
+        subject = message.topics[0]
         body = message.message
 
         #Setup the MIME

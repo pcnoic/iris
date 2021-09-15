@@ -1,33 +1,58 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import os
-import requests
-import sys 
+import firebase_admin
+from firebase_admin import credentials, messaging
+from fastapi.logger import logger
+
+cred = credentials.Certificate("/app/firebase_private_key.json")
+# local testing
+#cred = credentials.Certificate("firebase.json")
+
+firebase_admin.initialize_app(cred)
 
 
+class FIREBASE_REGISTER:
 
+    """
+    Registers devices in a notification topic.
+
+    @param registration_tokens array
+    @param topic string
+    """
+    def register_device(self, registration_tokens, topic):
+        # Subscribe the devices corresponding to the registration tokens to the
+        # topic.
+        response = messaging.subscribe_to_topic(registration_tokens, topic)
+        if response.success_count > 0:
+            print(response.success_count, ' tokens were subscribed to ', topic)
+            return 0
+        return 1
+
+    """
+    Unregisters devices from a notification topic.
+
+    @param registration_tokens array
+    @param topic string
+    """
+    def unregister_device(self, registration_tokens, topic):
+        # Unubscribe the devices corresponding to the registration tokens from the
+        # topic.
+        response = messaging.unsubscribe_from_topic(registration_tokens, topic)
+        if response.success_count > 0: 
+            print(response.success_count, ' tokens were unsubscribed from ', topic)
+            return 0
+        return 1
+
+    
 
 
 class FIREBASE_PUSH:
-    try:
-        notification_api = os.environ["FIREBASE_PUSH_API"]
-        print(notification_api)
-    except Exception as e:
-        print("The Firebase API is not set as environment variable: ", e)
-
-    try:
-        firebase_server_key = os.environ["FIREBASE_SERVER_KEY"]
-        print(firebase_server_key)
-    except Exception as e:
-        print("The Firebase Server Key is not set", e)
-
 
     try:
         application_url = os.environ["APPLICATION_URL"]
-        print(application_url)
     except Exception as e:
-        print("The application url is not set for Firebase notifications", e)
-
+        logger.error("APPLICATION_URL was not set. Notifications may malfanction.")
 
     def send(self, message):
         """
@@ -37,40 +62,35 @@ class FIREBASE_PUSH:
         :return The ID of the message.
         """
 
-        headers = {
-            "Authorization": "Bearer " + self.firebase_server_key,
-            "Content-Type": "application/json"
-        }
-
         notification = {
-            "title": message.topic,
+            "title": message.sender,
             "body": message.message,
             "click_action": self.application_url
         }
 
+        topic = ""
+        # Creating a computable topic expression
+  
+        for t in message.topics:
+            topic = "'" + t + "' in topics && " + topic
+        topic = topic[:-3]
+        
 
+        # Define a message payload
+        payload = messaging.Message(
+            notification,
+            condition=topic
+        )
 
+        # Send message to the devices subscribed to the provided topic.
+        response = messaging.send(payload)
+        # Response is a message ID string
+        if response is not None:
+            print('Successfully sent message: ', response)
+            return 0
+        else:
+            return 1
 
-        for target in message.targets:
-
-            payload = {}
-
-            payload = {
-                "notification": notification,
-                "to": target,
-            }
-
-            try:
-                print(payload)
-                print(headers)
-                req = requests.post(self.notification_api, json=payload, headers=headers)
-                print(req.status_code, req.reason, req.json())
-                sys.stdout.flush() # for debugging
-            except Exception as e:
-                print("Something went wrong when sending a request to Firebase Push API")
-                return 1
-            else: 
-                return 0
 
 def push(message):
     # Extend when adding more message types for the "firebase" provider

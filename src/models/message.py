@@ -1,9 +1,12 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from pydantic import BaseModel
 
 class Message(BaseModel):
     sender: str
-    targets: list # Number of receiver
+    targets: list # Id of receiver (in case of aws, classic)
     message: str
-    protocol: str # Usually: sms
-    topic: str # (could be used for groupping notifications)
-    provider: str # Supported providers: aws, classic
+    protocol: str # Protocol dependent on provider
+    topics: list 
+    provider: str # Supported providers: aws, classic, firebase
