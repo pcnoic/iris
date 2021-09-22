@@ -8,6 +8,7 @@ import json
 
 from models.message import Message
 from models.device import Device
+from models.telephone import Telephone
 from providers import aws, classic, firebase
 
 # Application controllers
@@ -44,6 +45,18 @@ def push_message(message: Message):
         response = {"status":"fail"}
 
     return response
+
+@app.post("/api/v1/sms/device/register")
+def number_register(telephone: Telephone):
+    registrar = aws.AWS_REGISTER()
+    result = registrar.register_telephone(telephone.telephone_numbers, telephone.topic)
+    if result != 0:
+        response = {"status":"fail"}
+    else:
+        response = {"status":"success"}
+    
+    return response
+
 
 @app.post("/api/v1/push/device/register")
 def device_register(device: Device):

@@ -3,44 +3,71 @@
 import boto3
 import os
 import logging
+from botocore.endpoint import Endpoint
 from botocore.exceptions import ClientError
+from starlette.responses import Response
 
 logger = logging.getLogger(__name__)
 
-class AWS_SMS:
+try:
+    client = boto3.client('sns',
+        aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+        aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'], 
+        region_name=os.environ['AWS_REGION'])
+except Exception as e:
+    print ('AWS credentials are not set as environment variables: ', e)
 
-    try:
-        client = boto3.client('sns',
-                              aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
-                              aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'], 
-                              region_name=os.environ['AWS_REGION'])
-    except Exception as e:
-        print ('AWS credentials are not set as environment variables: ', e)
+class AWS_REGISTER:
+    
+    """
+    Registers telephone numbers in a sms topic.
+
+    @param telephone_numbers array
+    @param topic string
+    """
+    def register_telephone(self, telephone_numbers, topic):
+        # Create the topic if it doesn't exist (this is idempotent)
+        sms_topic = client.create_topic(Name=topic)
+        sms_topic_arn = sms_topic['TopicArn'] # gets its ARN
+
+        # Add SMS Subscribers
+        for number in telephone_numbers:
+            
+            try:
+                client.subscribe(
+                    TopicArn=sms_topic_arn,
+                    Protocol='sms',
+                    Endpoint=number
+                )
+            except Exception as e:
+                print("Something went wrong when subscribing: ",e)
+                return 1
+        
+        return 0
+
+class AWS_SMS:
 
     def send(self, message):
         """
-        Publishes a text message directly to a phone number without need for a
-        subscription.
-
-        :param phone_number: The phone number that receives the message. This must be
-                             in E.164 format. For example, a United States phone
-                             number might be +12065550101.
-        :param message: The message to send.
-        :return The ID of the message.
+        Publishes a text message to a topic.
         """
-
-        for target in message.targets:
+        # Get topic ARN
+        for topic in message.topics:
 
             try:
-                response = self.client.publish(PhoneNumber=target, Message=message.message)
+                sms_topic = client.create_topic(Name=topic)
+                sms_topic_arn = sms_topic['TopicArn']  # get its Amazon Resource Name
+
+                # Publish a message.
+                response = client.publish(Message=message.message, TopicArn=sms_topic_arn)
                 message_id = response['MessageId']
-                logger.info("Published message to %s.", target)
-                print(message_id)
-            except ClientError:
-                logger.exception("Couldn't publish message to %s.", target)
+                print("Sent message with message_id:", message_id)
+            except Exception as e:
+                print("Something went wrong when sending to topic: ", e)
                 return 1
-            else:
-                return 0
+
+        return 0
+    
 
 class AWS_SES:
 
