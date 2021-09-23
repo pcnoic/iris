@@ -4,8 +4,9 @@ import os
 import firebase_admin
 from firebase_admin import credentials, messaging
 from fastapi.logger import logger
+import sys
 
-cred = credentials.Certificate("/app/firebase_private_key.json")
+cred = credentials.Certificate("firebase_private_key.json")
 # local testing
 #cred = credentials.Certificate("firebase.json")
 
@@ -20,14 +21,19 @@ class FIREBASE_REGISTER:
     @param registration_tokens array
     @param topic string
     """
-    def register_device(self, registration_tokens, topic):
+    def register_device(self, registration_tokens, topics):
         # Subscribe the devices corresponding to the registration tokens to the
         # topic.
-        response = messaging.subscribe_to_topic(registration_tokens, topic)
-        if response.success_count > 0:
-            print(response.success_count, ' tokens were subscribed to ', topic)
-            return 0
-        return 1
+        
+        for topic in topics:
+            response = messaging.subscribe_to_topic(registration_tokens, topic)
+            sys.stdout.flush()
+            if response.success_count > 0:
+                print(response.success_count, ' tokens were subscribed to ', topic)
+                
+            else:
+                return 1
+        return 0
 
     """
     Unregisters devices from a notification topic.
@@ -35,17 +41,20 @@ class FIREBASE_REGISTER:
     @param registration_tokens array
     @param topic string
     """
-    def unregister_device(self, registration_tokens, topic):
+    def unregister_device(self, registration_tokens, topics):
         # Unubscribe the devices corresponding to the registration tokens from the
         # topic.
-        response = messaging.unsubscribe_from_topic(registration_tokens, topic)
-        if response.success_count > 0: 
-            print(response.success_count, ' tokens were unsubscribed from ', topic)
-            return 0
-        return 1
-
-    
-
+        
+        for topic in topics:    
+            response = messaging.unsubscribe_from_topic(registration_tokens, topic)
+            sys.stdout.flush()
+            if response.success_count > 0: 
+                print(response.success_count, ' tokens were unsubscribed from ', topic)
+                
+            else:    
+                return 1
+        return 0
+       
 
 class FIREBASE_PUSH:
 
@@ -85,11 +94,13 @@ class FIREBASE_PUSH:
         # Send message to the devices subscribed to the provided topic.
         response = messaging.send(payload)
         # Response is a message ID string
+        sys.stdout.flush()
         if response is not None:
             print('Successfully sent message: ', response)
             return 0
         else:
             return 1
+        
 
 
 def push(message):
@@ -100,4 +111,5 @@ def push(message):
 
     sender = switcher.get(message.protocol, lambda : 'This message protocol is not yet supported for this provider.')
     result = sender.send(message)
+    sys.stdout.flush()
     return result

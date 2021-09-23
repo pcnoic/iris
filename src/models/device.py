@@ -6,4 +6,4 @@ from pydantic import BaseModel
 
 class Device(BaseModel):
     registration_tokens: list
-    topic: str
+    topics: list
