@@ -25,24 +25,24 @@ class AWS_REGISTER:
     @param telephone_numbers array
     @param topic string
     """
-    def register_telephone(self, telephone_numbers, topic):
-        # Create the topic if it doesn't exist (this is idempotent)
-        sms_topic = client.create_topic(Name=topic)
-        sms_topic_arn = sms_topic['TopicArn'] # gets its ARN
+    def register_telephone(self, telephone_numbers, topics):
+        for topic in topics:
+            # Create the topic if it doesn't exist (this is idempotent)
+            sms_topic = client.create_topic(Name=topic)
+            sms_topic_arn = sms_topic['TopicArn'] # gets its ARN
 
-        # Add SMS Subscribers
-        for number in telephone_numbers:
-            
-            try:
-                client.subscribe(
-                    TopicArn=sms_topic_arn,
-                    Protocol='sms',
-                    Endpoint=number
-                )
-            except Exception as e:
-                print("Something went wrong when subscribing: ",e)
-                return 1
-        
+            # Add SMS Subscribers
+            for number in telephone_numbers:
+
+                try:
+                    client.subscribe(
+                        TopicArn=sms_topic_arn,
+                        Protocol='sms',
+                        Endpoint=number
+                    )
+                except Exception as e:
+                    print("Something went wrong when subscribing: ",e)
+                    return 1
         return 0
 
 class AWS_SMS:

@@ -49,7 +49,7 @@ def push_message(message: Message):
 @app.post("/api/v1/sms/device/register")
 def number_register(telephone: Telephone):
     registrar = aws.AWS_REGISTER()
-    result = registrar.register_telephone(telephone.telephone_numbers, telephone.topic)
+    result = registrar.register_telephone(telephone.telephone_numbers, telephone.topics)
     if result != 0:
         response = {"status":"fail"}
     else:
@@ -61,7 +61,7 @@ def number_register(telephone: Telephone):
 @app.post("/api/v1/push/device/register")
 def device_register(device: Device):
     registrar = firebase.FIREBASE_REGISTER()
-    result = registrar.register_device(device.registration_tokens, device.topic)
+    result = registrar.register_device(device.registration_tokens, device.topics)
     if result != 0:
         response = {"status":"fail"}
     else:
@@ -73,7 +73,7 @@ def device_register(device: Device):
 @app.post("/api/v1/push/device/unregister")
 def device_unregister(device: Device):
     registrar = firebase.FIREBASE_REGISTER()
-    result = registrar.unregister_device(device.registration_tokens, device.topic)
+    result = registrar.unregister_device(device.registration_tokens, device.topics)
     if result != 0:
         response = {"status":"fail"}
     else: 

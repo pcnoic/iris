@@ -6,4 +6,4 @@ from pydantic import BaseModel
 
 class Telephone(BaseModel):
     telephone_numbers: list
-    topic: str
+    topics: list
